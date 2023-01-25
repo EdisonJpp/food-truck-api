@@ -8,12 +8,15 @@ require (
 	go.mongodb.org/mongo-driver v1.11.1
 )
 
+require github.com/golang-jwt/jwt/v4 v4.0.0 // indirect
+
 require (
 	github.com/andybalholm/brotli v1.0.4 // indirect
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.11.1 // indirect
-	github.com/golang/snappy v0.0.1 // indirect
+	github.com/gofiber/jwt/v2 v2.2.7
+	github.com/golang/snappy v0.0.3 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
