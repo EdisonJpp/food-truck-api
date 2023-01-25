@@ -6,6 +6,7 @@ import (
 	"food-truck-api/package/entities"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -31,6 +32,22 @@ func (r *repository) Register(newCompany *contract.RegisterRequest) (*entities.C
 	company.Password = newCompany.Password
 
 	_, err := r.Collection.InsertOne(context.Background(), company)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return company, nil
+}
+
+func (r *repository) GetCompanyByEmail(email string) (*entities.Company, error) {
+	company := new(entities.Company)
+
+	filter := bson.D{{
+		Key: "email", Value: email,
+	}}
+
+	err := r.Collection.FindOne(context.Background(), filter).Decode(&company)
 
 	if err != nil {
 		return nil, err

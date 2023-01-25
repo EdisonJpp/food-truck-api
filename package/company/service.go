@@ -19,3 +19,7 @@ func NewService(r contract.Repository) contract.Service {
 func (s *service) Register(company *contract.RegisterRequest) (*entities.Company, error) {
 	return s.repository.Register(company)
 }
+
+func (s *service) GetCompanyByEmail(email string) (*entities.Company, error) {
+	return s.repository.GetCompanyByEmail(email)
+}

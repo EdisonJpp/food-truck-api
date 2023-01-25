@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"food-truck-api/shared/presenter"
 	"os"
 
 	"github.com/gofiber/fiber/v2"
@@ -18,8 +19,8 @@ func Protected() fiber.Handler {
 func jwtError(c *fiber.Ctx, err error) error {
 	if err.Error() == "Missing or malformed JWT" {
 		return c.Status(fiber.StatusBadRequest).
-			JSON(fiber.Map{"status": "error", "message": "Missing or malformed JWT", "data": nil})
+			JSON(presenter.ErrorResponsePresenter("Missing or malformed JWT"))
 	}
 	return c.Status(fiber.StatusUnauthorized).
-		JSON(fiber.Map{"status": "error", "message": "Invalid or expired JWT", "data": nil})
+		JSON(presenter.ErrorResponsePresenter("Invalid or expired JWT"))
 }
