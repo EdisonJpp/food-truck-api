@@ -3,6 +3,7 @@ package handlers
 import (
 	"food-truck-api/api/company/presenter"
 	"food-truck-api/package/auth"
+	authContract "food-truck-api/package/auth/contract"
 	"food-truck-api/package/company/contract"
 	"net/http"
 
@@ -48,7 +49,11 @@ func LoginHandler(service contract.Service, authService auth.Service, validate v
 			return c.JSON(sPresenters.ErrorResponsePresenter("Incorrect data"))
 		}
 
-		token, err := authService.CreateToken(company)
+		token, err := authService.CreateToken(&authContract.CreateTokenRequest{
+			ID:    company.ID,
+			Name:  company.Name,
+			Email: company.Email,
+		})
 
 		if err != nil {
 

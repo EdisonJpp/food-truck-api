@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"food-truck-api/package/entities"
+	"food-truck-api/package/auth/contract"
 	"os"
 	"time"
 
@@ -12,7 +12,7 @@ import (
 type Repository interface {
 	HashPassword(password string) (string, error)
 	CheckPassword(hash string, password string) bool
-	CreateToken(company *entities.Company) (string, error)
+	CreateToken(payload *contract.CreateTokenRequest) (string, error)
 }
 
 type repository struct {
@@ -32,14 +32,14 @@ func (r *repository) CheckPassword(hash string, password string) bool {
 	return err == nil
 }
 
-func (r *repository) CreateToken(company *entities.Company) (string, error) {
+func (r *repository) CreateToken(payload *contract.CreateTokenRequest) (string, error) {
 
 	token := jwt.New(jwt.SigningMethodHS256)
 
 	claims := token.Claims.(jwt.MapClaims)
-	claims["companyName"] = company.Name
-	claims["companyEmail"] = company.Email
-	claims["userId"] = company.ID
+	claims["name"] = payload.Name
+	claims["email"] = payload.Email
+	claims["id"] = payload.ID
 
 	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
 

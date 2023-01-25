@@ -1,11 +1,13 @@
 package auth
 
-import "food-truck-api/package/entities"
+import (
+	"food-truck-api/package/auth/contract"
+)
 
 type Service interface {
 	HashPassword(password string) (string, error)
 	CheckPassword(hash string, password string) bool
-	CreateToken(company *entities.Company) (string, error)
+	CreateToken(payload *contract.CreateTokenRequest) (string, error)
 }
 
 type service struct {
@@ -26,6 +28,6 @@ func (s *service) CheckPassword(hash string, password string) bool {
 	return s.repository.CheckPassword(hash, password)
 }
 
-func (s *service) CreateToken(company *entities.Company) (string, error) {
-	return s.repository.CreateToken(company)
+func (s *service) CreateToken(payload *contract.CreateTokenRequest) (string, error) {
+	return s.repository.CreateToken(payload)
 }

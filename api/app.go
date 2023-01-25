@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"fmt"
+	ClientModule "food-truck-api/api/client"
 	CompanyModule "food-truck-api/api/company"
 	ProductModule "food-truck-api/api/product"
 	"food-truck-api/package/auth"
+	"food-truck-api/package/client"
 	"food-truck-api/package/company"
 	"food-truck-api/package/product"
 	"log"
@@ -14,6 +16,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -46,6 +49,20 @@ func main() {
 	authRepo := auth.NewRepo()
 	authService := auth.NewService(authRepo)
 
+	clientCollection := databases.db.Collection("clients")
+
+	// *** Create Index in client's email field ***//
+	opt := options.Index()
+	opt.SetUnique(true)
+	clienEmailIndex := mongo.IndexModel{Keys: bson.M{"email": 1}, Options: opt}
+	if _, err := clientCollection.Indexes().CreateOne(context.Background(), clienEmailIndex); err != nil {
+		log.Println("Could not create index:", err)
+	}
+	// --------------------------------- //
+
+	clientRepo := client.NewRepo(clientCollection)
+	clientService := client.NewService(clientRepo)
+
 	app := fiber.New()
 	app.Use(cors.New())
 	app.Get("/", func(ctx *fiber.Ctx) error {
@@ -56,6 +73,7 @@ func main() {
 
 	ProductModule.ProductRouter(api, productService)
 	CompanyModule.CompanyRouter(api, companyService, authService, *validate)
+	ClientModule.ClientRouter(api, clientService, authService, *validate)
 
 	defer cancel()
 	log.Fatal(app.Listen(":8080"))
