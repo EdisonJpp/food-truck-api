@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"food-truck-api/api/company/presenter"
+	"food-truck-api/package/auth"
 	"food-truck-api/package/company/contract"
 	"net/http"
 
@@ -11,10 +12,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func RegisterHandler(service contract.Service, validate validator.Validate) fiber.Handler {
+func RegisterHandler(service contract.Service, authService auth.Service, validate validator.Validate) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		requestBody := new(contract.RegisterRequest)
-
 		err := c.BodyParser(requestBody)
 
 		if err != nil {
@@ -26,6 +26,15 @@ func RegisterHandler(service contract.Service, validate validator.Validate) fibe
 			errors := sPresenters.FieldErrorFormatPresenter(err.(validator.ValidationErrors))
 			return c.Status(fiber.StatusBadRequest).JSON(sPresenters.ErrorResponsePresenter(errors))
 		}
+
+		hashedPassword, err := authService.HashPassword(requestBody.Password)
+
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return c.JSON(sPresenters.ErrorResponsePresenter("Couldn't hash password"))
+		}
+
+		requestBody.Password = hashedPassword
 
 		registed, err := service.Register(requestBody)
 

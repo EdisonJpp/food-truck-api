@@ -5,6 +5,7 @@ import (
 	"fmt"
 	CompanyModule "food-truck-api/api/company"
 	ProductModule "food-truck-api/api/product"
+	"food-truck-api/package/auth"
 	"food-truck-api/package/company"
 	"food-truck-api/package/product"
 	"log"
@@ -42,6 +43,9 @@ func main() {
 	companyRepo := company.NewRepo(companyCollection)
 	companyService := company.NewService(companyRepo)
 
+	authRepo := auth.NewRepo()
+	authService := auth.NewService(authRepo)
+
 	app := fiber.New()
 	app.Use(cors.New())
 	app.Get("/", func(ctx *fiber.Ctx) error {
@@ -51,7 +55,7 @@ func main() {
 	api := app.Group("/api/v1")
 
 	ProductModule.ProductRouter(api, productService)
-	CompanyModule.CompanyRouter(api, companyService, *validate)
+	CompanyModule.CompanyRouter(api, companyService, authService, *validate)
 
 	defer cancel()
 	log.Fatal(app.Listen(":8080"))
