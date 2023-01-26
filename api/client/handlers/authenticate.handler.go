@@ -12,6 +12,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 func AuthenticateHandler(
@@ -38,18 +39,40 @@ func AuthenticateHandler(
 
 		if requestBody.Email != "" {
 
-			client.Name = requestBody.Name
-			client.Email = requestBody.Email
+			isEmailExists := service.IsEmailExists(requestBody.Email)
 
-			newClient, err := service.CreateClient(client)
+			if isEmailExists {
+				item, err := service.GetClientByEmail(requestBody.Email)
 
-			if err != nil {
-				c.Status(http.StatusInternalServerError)
-				return c.JSON(sPresenters.ErrorResponsePresenter(err.Error()))
+				if err != nil {
+
+					if err == mongo.ErrNoDocuments {
+						c.Status(http.StatusNotFound)
+						return c.JSON(sPresenters.ErrorResponsePresenter("Client Not Found"))
+					}
+
+					c.Status(http.StatusInternalServerError)
+					return c.JSON(sPresenters.ErrorResponsePresenter(err.Error()))
+				}
+
+				client.ID = item.ID
+				client.Name = item.Name
+				client.Email = item.Email
+
+			} else {
+
+				client.Name = requestBody.Name
+				client.Email = requestBody.Email
+
+				newClient, err := service.CreateClient(client)
+
+				if err != nil {
+					c.Status(http.StatusInternalServerError)
+					return c.JSON(sPresenters.ErrorResponsePresenter(err.Error()))
+				}
+
+				client.ID = newClient.ID
 			}
-
-			client.ID = newClient.ID
-
 		}
 
 		t, err := authService.CreateToken(&authContract.CreateTokenRequest{
