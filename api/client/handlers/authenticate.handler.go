@@ -22,7 +22,6 @@ func AuthenticateHandler(
 ) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		requestBody := new(contract.AuthenticateRequest)
-
 		err := c.BodyParser(requestBody)
 
 		if err != nil {
@@ -39,10 +38,15 @@ func AuthenticateHandler(
 
 		if requestBody.Email != "" {
 
-			isEmailExists := service.IsEmailExists(requestBody.Email)
+			isEmailExists, err := service.IsEmailExists(requestBody.Email, requestBody.CompanyId)
+
+			if err != nil {
+				c.Status(http.StatusInternalServerError)
+				return c.JSON(sPresenters.ErrorResponsePresenter(err.Error()))
+			}
 
 			if isEmailExists {
-				item, err := service.GetClientByEmail(requestBody.Email)
+				item, err := service.GetClientByEmail(requestBody.Email, requestBody.CompanyId)
 
 				if err != nil {
 

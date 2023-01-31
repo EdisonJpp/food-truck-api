@@ -12,8 +12,8 @@ import (
 
 type Repository interface {
 	CreateClient(client *entities.Client) (*entities.Client, error)
-	GetClientByEmail(email string) (*entities.Client, error)
-	IsEmailExists(email string) bool
+	GetClientByEmail(email string, companyId primitive.ObjectID) (*entities.Client, error)
+	IsEmailExists(email string, companyId primitive.ObjectID) (bool, error)
 }
 
 type repository struct {
@@ -40,24 +40,21 @@ func (r *repository) CreateClient(client *entities.Client) (*entities.Client, er
 	return client, errr
 }
 
-func (r *repository) IsEmailExists(email string) bool {
-	filter := bson.D{{Key: "email", Value: email}}
+func (r *repository) IsEmailExists(email string, companyId primitive.ObjectID) (bool, error) {
+	filter := bson.D{{Key: "email", Value: email}, {Key: "companyId", Value: companyId}}
 
 	count, err := r.Collection.CountDocuments(context.TODO(), filter)
 
 	if err != nil {
-		panic(err)
+		return false, err
 	}
 
-	return count > 0
+	return count > 0, nil
 }
 
-func (r *repository) GetClientByEmail(email string) (*entities.Client, error) {
+func (r *repository) GetClientByEmail(email string, companyId primitive.ObjectID) (*entities.Client, error) {
 	client := new(entities.Client)
-
-	filter := bson.D{{
-		Key: "email", Value: email,
-	}}
+	filter := bson.D{{Key: "email", Value: email}, {Key: "companyId", Value: companyId}}
 
 	err := r.Collection.FindOne(context.Background(), filter).Decode(&client)
 
